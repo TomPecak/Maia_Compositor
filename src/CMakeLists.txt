@@ -4,9 +4,11 @@ project(Maia-Compositor-App LANGUAGES C)
 
 find_package(PkgConfig REQUIRED)
 
-pkg_check_modules(WLROOTS REQUIRED IMPORTED_TARGET wlroots)
+pkg_check_modules(WLROOTS REQUIRED IMPORTED_TARGET wlroots-0.19)
 pkg_check_modules(WAYLAND_SERVER REQUIRED IMPORTED_TARGET wayland-server)
 pkg_check_modules(XKBCOMMON REQUIRED IMPORTED_TARGET xkbcommon)
+
+message(STATUS "=== DETECTED WLROOTS VERSION: ${WLROOTS_VERSION} ===")
 
 add_executable(Maia-Compositor-App main.c)
 

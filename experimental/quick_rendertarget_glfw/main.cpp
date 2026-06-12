@@ -1,174 +1,120 @@
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-
-int main(int argc, char* argv[]) {
-  QGuiApplication app(argc, argv);
-
-  QQmlApplicationEngine engine;
-  QObject::connect(
-      &engine, &QQmlApplicationEngine::objectCreationFailed, &app,
-      []() { QCoreApplication::exit(-1); }, Qt::QueuedConnection);
-  engine.loadFromModule("quick_rendertarget_glfw", "Main");
-
-  return QGuiApplication::exec();
-}
-
-// ************************************************************************************
-
-// #define GLAD_GL_IMPLEMENTATION
-// #include "glad/gl.h"
-// #define GLFW_INCLUDE_NONE
+// #include <QGuiApplication>
+// #include <QCoreApplication>
+// #include <QOpenGLContext>
+// #include <QOffscreenSurface>
+// #define GLFW_EXPOSE_NATIVE_GLX
 // #include <GLFW/glfw3.h>
-// #include <stddef.h>
-// #include <stdio.h>
-// #include <stdlib.h>
+// #include <GLFW/glfw3native.h>
+// #include <iostream>
 
-// #include "linmath.h"
+// int main(int argc, char *argv[])
+// {
+//   QGuiApplication app(argc, argv);
 
-// typedef struct Vertex {
-//   vec2 pos;
-//   vec3 col;
-// } Vertex;
 
-// static const Vertex vertices[3] = {{{-0.6f, -0.4f}, {1.f, 0.f, 0.f}},
-//                                    {{0.6f, -0.4f}, {0.f, 1.f, 0.f}},
-//                                    {{0.f, 0.6f}, {0.f, 0.f, 1.f}}};
-
-// static const char* vertex_shader_text =
-//     "#version 330\n"
-//     "uniform mat4 MVP;\n"
-//     "in vec3 vCol;\n"
-//     "in vec2 vPos;\n"
-//     "out vec3 color;\n"
-//     "void main()\n"
-//     "{\n"
-//     "    gl_Position = MVP * vec4(vPos, 0.0, 1.0);\n"
-//     "    color = vCol;\n"
-//     "}\n";
-
-// static const char* fragment_shader_text =
-//     "#version 330\n"
-//     "in vec3 color;\n"
-//     "out vec4 fragment;\n"
-//     "void main()\n"
-//     "{\n"
-//     "    fragment = vec4(color, 1.0);\n"
-//     "}\n";
-
-// static void error_callback(int error, const char* description) {
-//   fprintf(stderr, "Error: %s\n", description);
-// }
-
-// static int is_space_pressed = 0;
-
-// static void key_callback(GLFWwindow* window, int key, int scancode, int
-// action,
-//                          int mods) {
-//   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-//     glfwSetWindowShouldClose(window, GLFW_TRUE);
-
-//   if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
-//     if (is_space_pressed == 0) {
-//       is_space_pressed = 1;
-//     } else {
-//       is_space_pressed = 0;
-//     }
-
-//     printf("Spacja wcisnieta! Stan flagi: %d\n", is_space_pressed);
+//   if(!glfwInit()){
+//     std::cerr << "Failed initialize glfw";
+//     exit(1);
 //   }
-// }
 
-// int main(void) {
-//   glfwSetErrorCallback(error_callback);
-
-//   if (!glfwInit()) exit(EXIT_FAILURE);
-
+//   glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_NATIVE_CONTEXT_API);
 //   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 //   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-//   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+//   glfwWindowHint(GLFW_OPENGL_ANY_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-//   GLFWwindow* window =
-//       glfwCreateWindow(640, 480, "OpenGL Triangle", NULL, NULL);
-//   if (!window) {
-//     glfwTerminate();
+//   GLFWwindow* window = glfwCreateWindow(800, 600, "Qml in GLFW window", nullptr, nullptr);
+//   if(!window){
+//     std::cout << "Wndow creation failed!";
 //     exit(EXIT_FAILURE);
+//   }else{
+//     std::cout << "Sucessful window creation!" << std::endl;
 //   }
-
-//   glfwSetKeyCallback(window, key_callback);
 
 //   glfwMakeContextCurrent(window);
-//   gladLoadGL(glfwGetProcAddress);
-//   glfwSwapInterval(1);
 
-//   // NOTE: OpenGL error checks have been omitted for brevity
+//   GLXContext glxContext = glfwGetGLXContext(window);
+//   QOpenGLContext *glfwQtContext = QNativeInterface::QGLXContext::fromNative(glxContext);
 
-//   GLuint vertex_buffer;
-//   glGenBuffers(1, &vertex_buffer);
-//   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-//   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+//   glfwQtContext->create();
 
-//   const GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-//   glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
-//   glCompileShader(vertex_shader);
-
-//   const GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-//   glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);
-//   glCompileShader(fragment_shader);
-
-//   const GLuint program = glCreateProgram();
-//   glAttachShader(program, vertex_shader);
-//   glAttachShader(program, fragment_shader);
-//   glLinkProgram(program);
-
-//   const GLint mvp_location = glGetUniformLocation(program, "MVP");
-//   const GLint vpos_location = glGetAttribLocation(program, "vPos");
-//   const GLint vcol_location = glGetAttribLocation(program, "vCol");
-
-//   GLuint vertex_array;
-//   glGenVertexArrays(1, &vertex_array);
-//   glBindVertexArray(vertex_array);
-//   glEnableVertexAttribArray(vpos_location);
-//   glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-//                         (void*)offsetof(Vertex, pos));
-//   glEnableVertexAttribArray(vcol_location);
-//   glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-//                         (void*)offsetof(Vertex, col));
-
-//   double time = 0.0;
-//   double delta_time = 1.0 / 60.0;
-
-//   while (!glfwWindowShouldClose(window)) {
-//     int width, height;
-//     glfwGetFramebufferSize(window, &width, &height);
-//     const float ratio = width / (float)height;
-
-//     glViewport(0, 0, width, height);
-//     glClear(GL_COLOR_BUFFER_BIT);
-
-//     mat4x4 m, p, mvp;
-//     mat4x4_identity(m);
-
-//     if (is_space_pressed == 0) {
-//       mat4x4_rotate_Z(m, m, (float)glfwGetTime());
-//     } else {
-//       mat4x4_rotate_Z(m, m, (float)time);
-//     }
-//     mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-//     mat4x4_mul(mvp, p, m);
-
-//     glUseProgram(program);
-//     glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*)&mvp);
-//     glBindVertexArray(vertex_array);
-//     glDrawArrays(GL_TRIANGLES, 0, 3);
-
-//     time = time + delta_time;
-
-//     glfwSwapBuffers(window);
-//     glfwPollEvents();
+//   if(!glfwQtContext){
+//     std::cout << "[ERROR] Failded to create QOpenGLContext from glfw context !!" << std::endl;
+//     exit(EXIT_FAILURE);
+//   }else{
+//     std::cout << "[SUCCESS] Successfull create QOpenGLContext from glfw context !!" << std::endl;
 //   }
 
-//   glfwDestroyWindow(window);
+//   QOffscreenSurface surface;
+//   glfwQtContext->makeCurrent(&surface);
 
-//   glfwTerminate();
-//   exit(EXIT_SUCCESS);
+//   return 0;
 // }
+
+
+#include <QGuiApplication>
+#include <QCoreApplication>
+#include <QOpenGLContext>
+#include <QOffscreenSurface>
+
+#define GLFW_EXPOSE_NATIVE_WAYLAND // Wymagane, żeby podpowiedzieć GLFW środowisko
+#define GLFW_EXPOSE_NATIVE_EGL
+
+#include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
+
+#include <iostream>
+
+int main(int argc, char *argv[])
+{
+  // Wymuszamy Waylanda dla Qt
+  qputenv("QT_QPA_PLATFORM","wayland");
+  QGuiApplication app(argc, argv);
+
+          // POPRAWKA: Wymuszamy Waylanda również dla GLFW (wymaga GLFW 3.3+)
+  glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
+
+  if(!glfwInit()){
+    std::cerr << "Failed initialize glfw\n";
+    exit(1);
+  }
+
+          // POPRAWKA: Wymuszamy, by GLFW na 100% użyło EGL
+  glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
+
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+
+  // POPRAWKA: Zła flaga hintu w Twoim kodzie. Zmieniono ANY na PROFILE.
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+  GLFWwindow* window = glfwCreateWindow(800, 600, "Qml in GLFW window", nullptr, nullptr);
+  if(!window){
+    std::cerr << "Window creation failed!\n";
+    exit(EXIT_FAILURE);
+  } else {
+    std::cout << "Successful window creation!" << std::endl;
+  }
+
+  glfwMakeContextCurrent(window);
+
+  EGLContext eglContext = glfwGetEGLContext(window);
+  EGLDisplay eGLDisplay = glfwGetEGLDisplay();
+
+  if (eglContext == EGL_NO_CONTEXT || eGLDisplay == EGL_NO_DISPLAY) {
+    std::cerr << "[ERROR] GLFW failed to provide EGL Context/Display!\n";
+    exit(EXIT_FAILURE);
+  }
+
+  QOpenGLContext *glfwQtContext = QNativeInterface::QEGLContext::fromNative(eglContext, eGLDisplay);
+
+  if(!glfwQtContext){
+    std::cerr << "[ERROR] Failed to create QOpenGLContext from glfw context !!" << std::endl;
+    exit(EXIT_FAILURE);
+  } else {
+    // Teraz jest bezpiecznie to zawołać
+    glfwQtContext->create();
+    std::cout << "[SUCCESS] Successfully created QOpenGLContext from glfw context !!" << std::endl;
+  }
+
+  return 0;
+}
